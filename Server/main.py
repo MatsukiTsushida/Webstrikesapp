@@ -27,14 +27,6 @@ def unauthorized(error):
 def forbidden(error):
     return make_response(jsonify({'Content': 'forbidden'}), 403)
 
-@app.errorhandler(410)
-def Gone(error):
-    return make_response(jsonify({'Record gone': 'deleted'}), 410)
-
-@app.errorhandler(429)
-def toomanyrequests(error):
-    return make_response(jsonify({'Requests': 'too many'}), 429)
-
 @app.errorhandler(500)
 def internalserver(error):
     return make_response(jsonify({'Server': 'error'}), 500)
@@ -49,8 +41,11 @@ def BadGateway(error):
 
 @app.route('/orders', methods=['GET'])
 def get_orders():
-    cursor.execute("select * from orders")
-    return jsonify({'orders': cursor.fetchall()})
+    try:
+        cursor.execute("select * from orders")
+        return jsonify({'orders': cursor.fetchall()})
+    except Exception as e:
+        print(type(e).__name__, e, datetime.now()[:-4])
 
 @app.route('/orders/<int:order_id>', methods=['GET'])
 def get_order_by_id(order_id):

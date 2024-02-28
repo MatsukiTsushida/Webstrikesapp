@@ -43,101 +43,139 @@ def BadGateway(error):
 def get_orders():
     try:
         cursor.execute("select * from orders")
-        return jsonify({'orders': cursor.fetchall()})
+        return make_response(jsonify({'orders': cursor.fetchall()})), {"Access-Control-Allow-Origin": "*",
+                                                                       "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE",
+                                                                       "Access-Control-Allow-Headers": "Content-Type"}
     except Exception as e:
         print(type(e).__name__, e, datetime.now()[:-4])
+        abort(500)
 
 @app.route('/orders/<int:order_id>', methods=['GET'])
 def get_order_by_id(order_id):
-    cursor.execute(f"select * from orders where id = {order_id}")
-    order = cursor.fetchall()
-    if not order:
-      abort(404)
-    return jsonify({'order': order[0]})
+    try:
+        cursor.execute(f"select * from orders where id = {order_id}")
+        order = cursor.fetchall()
+        if not order:
+          abort(404)
+        return jsonify({'order': order[0]})
+    except Exception as e:
+        print(type(e).__name__, e, datetime.now()[:-4])
+        abort(500)
 
 @app.route('/orders', methods=['POST'])
 def add_orders():
-    if not request.json or not 'user_id' in request.json:
-      abort(400)
-    print(f'''INSERT INTO orders (order_date, user_id) 
-               VALUES ({datetime.strptime(request.json['order_date'], '%Y-%d-%m').date() if 'order_date' in request.json else datetime.now()},
-                      {request.json['user_id']})''')
-    cursor.execute(f'''INSERT INTO orders (order_date, user_id) 
-                       VALUES (\'{datetime.strptime(request.json['order_date'], '%Y-%d-%m').date() if 'order_date' in request.json else datetime.now()}\',
-                              {request.json['user_id']}) ''')
-    return jsonify({'result': 'insert success'})
-
+    try:
+        if not request.json or not 'user_id' in request.json:
+          abort(400)
+        print(f'''INSERT INTO orders (order_date, user_id) 
+                   VALUES ({datetime.strptime(request.json['order_date'], '%Y-%d-%m').date() if 'order_date' in request.json else datetime.now()},
+                          {request.json['user_id']})''')
+        cursor.execute(f'''INSERT INTO orders (order_date, user_id) 
+                           VALUES (\'{datetime.strptime(request.json['order_date'], '%Y-%d-%m').date() if 'order_date' in request.json else datetime.now()}\',
+                                  {request.json['user_id']}) ''')
+        return jsonify({'result': 'insert success'})
+    except Exception as e:
+        print(type(e).__name__, e, datetime.now()[:-4])
+        abort(500)
 @app.route('/orders/<int:order_id>', methods=['PUT'])
 def update_orders(order_id):
-    cursor.execute(f"select * from orders where id = {order_id}")
-    order = cursor.fetchall()
-    if not order:
-      abort(404)
-    if not request.json or not 'user_id' in request.json:
-      abort(400)
-    cursor.execute(f'''UPDATE orders 
-        SET order_date = \'{datetime.strptime(request.json['order_date'], '%Y-%d-%m').date() if 'order_date' in request.json else datetime.now()}\',
-        user_id = {request.json['user_id']} WHERE id = {order_id}''')
-    cursor.execute(f"select * from orders where id = {order_id}")
-    order = cursor.fetchall()
-    return jsonify({'order': order[0]})
+    try:
+        cursor.execute(f"select * from orders where id = {order_id}")
+        order = cursor.fetchall()
+        if not order:
+          abort(404)
+        if not request.json or not 'user_id' in request.json:
+          abort(400)
+        cursor.execute(f'''UPDATE orders 
+            SET order_date = \'{datetime.strptime(request.json['order_date'], '%Y-%d-%m').date() if 'order_date' in request.json else datetime.now()}\',
+            user_id = {request.json['user_id']} WHERE id = {order_id}''')
+        cursor.execute(f"select * from orders where id = {order_id}")
+        order = cursor.fetchall()
+        return jsonify({'order': order[0]})
+    except Exception as e:
+        print(type(e).__name__, e, datetime.now()[:-4])
+        abort(500)
 
 @app.route('/orders/<int:order_id>', methods=['DELETE'])
 def delete_orders(order_id):
-    cursor.execute(f"select * from orders where id = {order_id}")
-    order = cursor.fetchall()
-    if not order:
-        abort(404)
-    cursor.execute(f"delete from orders where id = {order_id}")
-    return jsonify({'result': True})
+    try:
+        cursor.execute(f"select * from orders where id = {order_id}")
+        order = cursor.fetchall()
+        if not order:
+            abort(404)
+        cursor.execute(f"delete from orders where id = {order_id}")
+        return jsonify({'result': True})
+    except Exception as e:
+        print(type(e).__name__, e, datetime.now()[:-4])
+        abort(500)
 
 
 @app.route('/users', methods=['GET'])
 def get_users():
-    cursor.execute("select * from users")
-    users = cursor.fetchall()
-    return jsonify({'users': users})
+    try:
+        cursor.execute("select * from users")
+        users = cursor.fetchall()
+        return jsonify({'users': users})
+    except Exception as e:
+        print(type(e).__name__, e, datetime.now()[:-4])
+        abort(500)
 
 @app.route('/users/<int:user_id>', methods=['GET'])
 def get_user_by_id(user_id):
-    cursor.execute(f"select * from users where id={user_id}")
-    user = cursor.fetchall()
-    if not user:
-      abort(404)
-    return jsonify({'user': user[0]})
+    try:
+        cursor.execute(f"select * from users where id={user_id}")
+        user = cursor.fetchall()
+        if not user:
+          abort(404)
+        return jsonify({'user': user[0]})
+    except Exception as e:
+        print(type(e).__name__, e, datetime.now()[:-4])
+        abort(500)
 
 @app.route('/users', methods=['POST'])
 def add_users():
-    if not request.json:
-      abort(404)
-    cursor.execute(f'''INSERT INTO users (user_name, email) 
-                        VALUES (\'{request.json['user_name'] if 'user_name' in request.json else 'cringe'}\',
-                                \'{request.json['email']}\')''')
-    return jsonify({'user': "success"})
+    try:
+        if not request.json:
+          abort(404)
+        cursor.execute(f'''INSERT INTO users (user_name, email) 
+                            VALUES (\'{request.json['user_name'] if 'user_name' in request.json else 'cringe'}\',
+                                    \'{request.json['email']}\')''')
+        return jsonify({'user': "success"})
+    except Exception as e:
+        print(type(e).__name__, e, datetime.now()[:-4])
+        abort(500)
 
 @app.route('/users/<int:user_id>', methods=['PUT'])
 def update_users(user_id):
-    cursor.execute(f"select * from users where id={user_id}")
-    user = cursor.fetchall()
-    if not user:
-      abort(404)
-    if not request.json:
-      abort(400)
-    cursor.execute(f'''UPDATE users 
-                       SET user_name = \'{request.json['user_name'] if 'user_name' in request.json else user[0]['user_name']}\',
-                        email = \'{request.json['email'] if 'email' in request.json else user[0]['email']}\' where id = {user_id}''')
-    cursor.execute(f"select * from users where id = {user_id}")
-    cursor.fetchall()
-    return jsonify({'user': user[0]})
+    try:
+        cursor.execute(f"select * from users where id={user_id}")
+        user = cursor.fetchall()
+        if not user:
+          abort(404)
+        if not request.json:
+          abort(400)
+        cursor.execute(f'''UPDATE users 
+                           SET user_name = \'{request.json['user_name'] if 'user_name' in request.json else user[0]['user_name']}\',
+                            email = \'{request.json['email'] if 'email' in request.json else user[0]['email']}\' where id = {user_id}''')
+        cursor.execute(f"select * from users where id = {user_id}")
+        cursor.fetchall()
+        return jsonify({'user': user[0]})
+    except Exception as e:
+        print(type(e).__name__, e, datetime.now()[:-4])
+        abort(500)
 
 @app.route('/users/<int:user_id>', methods=['DELETE'])
 def delete_users(user_id):
-    cursor.execute(f"select * from users where id = {user_id}")
-    user = cursor.fetchall()
-    if not user:
-        abort(404)
-    cursor.execute(f"delete from users where id = {user_id}")
-    return jsonify({'result': True})
+    try:
+        cursor.execute(f"select * from users where id = {user_id}")
+        user = cursor.fetchall()
+        if not user:
+            abort(404)
+        cursor.execute(f"delete from users where id = {user_id}")
+        return jsonify({'result': True})
+    except Exception as e:
+        print(type(e).__name__, e, datetime.now()[:-4])
+        abort(500)
 
 
 app.run(debug=True)

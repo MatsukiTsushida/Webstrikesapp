@@ -7,7 +7,7 @@ from datetime import *
 app = Flask(__name__)
 
 db = psycopg2.connect(database = "postgres", user = "postgres", password = "1111", host = "localhost", port = "5432")
-cursor = db.cursor(cursor_factory = RealDictCursor)
+
 
 
 
@@ -45,8 +45,11 @@ def BadGateway(error):
 @app.route('/orders', methods=['GET'])
 def get_orders():
     try:
-        cursor.execute("select * from orders")
-        return make_response(jsonify({'orders': cursor.fetchall()})), {"Access-Control-Allow-Origin": "*",
+        cursor = db.cursor(cursor_factory=RealDictCursor)
+        cursor.execute("select * from orders;")
+        orders = cursor.fetchall()
+        print(1, orders)
+        return make_response(jsonify({'data': orders})), {"Access-Control-Allow-Origin": "*",
                                                                        "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE",
                                                                        "Access-Control-Allow-Headers": "Content-Type"}
     except Exception as e:
@@ -56,6 +59,7 @@ def get_orders():
 @app.route('/orders/<int:order_id>', methods=['GET'])
 def get_order_by_id(order_id):
     try:
+        cursor = db.cursor(cursor_factory=RealDictCursor)
         cursor.execute(f"select * from orders where id = {order_id}")
         order = cursor.fetchall()
         if not order:
@@ -73,6 +77,7 @@ def add_orders():
         print(f'''INSERT INTO orders (order_date, user_id)
                    VALUES ({datetime.strptime(request.json['order_date'], '%Y-%d-%m').date() if 'order_date' in request.json else datetime.now()},
                           {request.json['user_id']})''')
+        cursor = db.cursor(cursor_factory=RealDictCursor)
         cursor.execute(f'''INSERT INTO orders (order_date, user_id)
                            VALUES (\'{datetime.strptime(request.json['order_date'], '%Y-%d-%m').date() if 'order_date' in request.json else datetime.now()}\',
                                   {request.json['user_id']}) ''')
@@ -86,6 +91,7 @@ def add_orders():
 @app.route('/orders/<int:order_id>', methods=['PUT'])
 def update_orders(order_id):
     try:
+        cursor = db.cursor(cursor_factory=RealDictCursor)
         cursor.execute(f"select * from orders where id = {order_id}")
         order = cursor.fetchall()
         if not order:
@@ -108,6 +114,7 @@ def update_orders(order_id):
 @app.route('/orders/<int:order_id>', methods=['DELETE'])
 def delete_orders(order_id):
     try:
+        cursor = db.cursor(cursor_factory=RealDictCursor)
         cursor.execute(f"select * from orders where id = {order_id}")
         order = cursor.fetchall()
         if not order:
@@ -125,9 +132,14 @@ def delete_orders(order_id):
 @app.route('/users', methods=['GET'])
 def get_users():
     try:
-        cursor.execute("select * from users")
+        cursor = db.cursor(cursor_factory=RealDictCursor)
+        cursor.execute("select * from users;")
         users = cursor.fetchall()
-        return jsonify({'users': users})
+        print(2, users)
+        return jsonify({'data': users}), {"Access-Control-Allow-Origin": "*",
+                                            "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE",
+                                            "Access-Control-Allow-Headers": "Content-Type"}
+    
     except Exception as e:
         print(type(e).__name__, e, datetime.now()[:-4])
         abort(500)
@@ -135,6 +147,7 @@ def get_users():
 @app.route('/users/<int:user_id>', methods=['GET'])
 def get_user_by_id(user_id):
     try:
+        cursor = db.cursor(cursor_factory=RealDictCursor)
         cursor.execute(f"select * from users where id={user_id}")
         user = cursor.fetchall()
         if not user:
@@ -149,6 +162,7 @@ def add_users():
     try:
         if not request.json:
           abort(404)
+        cursor = db.cursor(cursor_factory=RealDictCursor)
         cursor.execute(f'''INSERT INTO users (user_name, email) 
                             VALUES (\'{request.json['user_name'] if 'user_name' in request.json else 'cringe'}\',
                                     \'{request.json['email']}\')''')
@@ -160,6 +174,7 @@ def add_users():
 @app.route('/users/<int:user_id>', methods=['PUT'])
 def update_users(user_id):
     try:
+        cursor = db.cursor(cursor_factory=RealDictCursor)
         cursor.execute(f"select * from users where id={user_id}")
         user = cursor.fetchall()
         if not user:
@@ -179,6 +194,7 @@ def update_users(user_id):
 @app.route('/users/<int:user_id>', methods=['DELETE'])
 def delete_users(user_id):
     try:
+        cursor = db.cursor(cursor_factory=RealDictCursor)
         cursor.execute(f"select * from users where id = {user_id}")
         user = cursor.fetchall()
         if not user:

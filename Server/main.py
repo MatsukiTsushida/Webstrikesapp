@@ -29,7 +29,10 @@ def forbidden(error):
 
 @app.errorhandler(500)
 def internalserver(error):
-    return make_response(jsonify({'Server': 'error'}), 500)
+    response = make_response(jsonify({'Server': 'error'}), 500)
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
+    return response
 
 @app.errorhandler(502)
 def BadGateway(error):
@@ -67,15 +70,18 @@ def add_orders():
     try:
         if not request.json or not 'user_id' in request.json:
           abort(400)
-        print(f'''INSERT INTO orders (order_date, user_id) 
+        print(f'''INSERT INTO orders (order_date, user_id)
                    VALUES ({datetime.strptime(request.json['order_date'], '%Y-%d-%m').date() if 'order_date' in request.json else datetime.now()},
                           {request.json['user_id']})''')
-        cursor.execute(f'''INSERT INTO orders (order_date, user_id) 
+        cursor.execute(f'''INSERT INTO orders (order_date, user_id)
                            VALUES (\'{datetime.strptime(request.json['order_date'], '%Y-%d-%m').date() if 'order_date' in request.json else datetime.now()}\',
                                   {request.json['user_id']}) ''')
-        return jsonify({'result': 'insert success'})
+        response =  make_response(jsonify({'result': 'insert success'}))
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
+        return response
     except Exception as e:
-        print(type(e).__name__, e, datetime.now()[:-4])
+        print(type(e).__name__, e, str(datetime.now())[:-4])
         abort(500)
 @app.route('/orders/<int:order_id>', methods=['PUT'])
 def update_orders(order_id):
@@ -91,9 +97,12 @@ def update_orders(order_id):
             user_id = {request.json['user_id']} WHERE id = {order_id}''')
         cursor.execute(f"select * from orders where id = {order_id}")
         order = cursor.fetchall()
-        return jsonify({'order': order[0]})
+        response = make_response(jsonify({'order': order[0]}))
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
+        return response
     except Exception as e:
-        print(type(e).__name__, e, datetime.now()[:-4])
+        print(type(e).__name__, e, str(datetime.now())[:-4])
         abort(500)
 
 @app.route('/orders/<int:order_id>', methods=['DELETE'])
@@ -104,9 +113,12 @@ def delete_orders(order_id):
         if not order:
             abort(404)
         cursor.execute(f"delete from orders where id = {order_id}")
-        return jsonify({'result': True})
+        response = make_response(jsonify({'result': True}))
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
+        return response
     except Exception as e:
-        print(type(e).__name__, e, datetime.now()[:-4])
+        print(type(e).__name__, e, str(datetime.now())[:-4])
         abort(500)
 
 

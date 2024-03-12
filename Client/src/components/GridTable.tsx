@@ -1,15 +1,16 @@
 import { functions, actions } from "../common/consts";
-import { useState, useEffect } from "react";
+import { useState, useEffect, FormEvent } from "react";
 import { AgGridReact } from "ag-grid-react"; // React Grid Logic
 import "ag-grid-community/styles/ag-grid.css"; // Core CSS
 import "ag-grid-community/styles/ag-theme-quartz.css"; // Theme
+import { ColDef } from "ag-grid-community";
 
-export const GridTable = ({ root }) => {
+export const GridTable = ({ root }: { root: string }) => {
   const [rowData, setRowData] = useState([]);
-  const [colDefs, setColDefs] = useState([]);
+  const [colDefs, setColDefs] = useState<ColDef[]>([]);
   const [currentAction, setCurrentAction] = useState("");
 
-  const fetching = async (root) => {
+  const fetching = async (root: string) => {
     const apiRes = await fetch(`http://127.0.0.1:5000/${root}`);
     const res = await apiRes.json();
     setRowData(res.data);
@@ -29,9 +30,8 @@ export const GridTable = ({ root }) => {
     return;
   }, []);
 
-  const changeAction = (action) => {
+  const changeAction = (action: string) => {
     currentAction === action ? setCurrentAction("") : setCurrentAction(action);
-    console.log(typeof actions[action]);
   };
 
   return (
@@ -41,10 +41,10 @@ export const GridTable = ({ root }) => {
       <button onClick={() => changeAction(actions["edit"])}>edit</button>
       <button onClick={() => changeAction(actions["del"])}>delete</button>
       <form
-        onSubmit={(e) => {
+        onSubmit={(e: FormEvent<HTMLFormElement>) => {
           e.preventDefault();
-          const data = new FormData(e.target);
-          const obj = {};
+          const data = new FormData(e.currentTarget);
+          const obj: { [k: string]: string | File } = {};
           for (let i of data) {
             obj[i[0]] = i[1];
           }
